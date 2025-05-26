@@ -24,7 +24,9 @@ export class ProjectsService {
     const owner = await this.userRepo.findOneBy({ id: ownerId });
     if (!owner) throw new NotFoundException('Utilisateur non trouvé');
 
-    this.projectRepo.create({ ...dto, owner });
+    const project = this.projectRepo.create({ ...dto, owner });
+    await this.projectRepo.save(project);
+
     return { message: 'Projet créé' };
   }
 
