@@ -22,7 +22,6 @@ export const RoleGuard = (roles?: Role[]): ReturnType<typeof mixin> => {
       if (!token) throw new UnauthorizedException();
 
       try {
-        console.log(`Vérification du token: ${token}`);
         const payload = await this.jwtService.verifyAsync(token, {
           secret: jwtConstants.secret,
         });
