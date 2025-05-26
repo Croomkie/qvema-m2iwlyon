@@ -1,10 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import { Role } from './enum/role';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { UserDto } from './dto/user.dto';
+import { plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class UsersService {
@@ -45,6 +47,15 @@ export class UsersService {
 
   findAll(): User[] {
     return this.users;
+  }
+
+  async getUser(userId: string): Promise<UserDto | null> {
+    const user = await this.userRepo.findOne({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return plainToInstance(UserDto, user, { excludeExtraneousValues: true });
   }
 
   update(id: number, updateUserDto: UpdateUserDto) {
