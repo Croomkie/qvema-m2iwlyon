@@ -14,5 +14,7 @@ export class InterestService {
     return await this.interestRepo.find();
   }
 
-  async getRecommendation(userId: string) {}
+  async getRecommendation(userId: string) {
+    //TODO: Implement recommendation logic based on user interests
+  }
 }
