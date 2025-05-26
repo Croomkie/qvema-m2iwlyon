@@ -1,4 +1,72 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Project } from './entities/project.entity';
+import { User } from '../users/entities/user.entity';
+import { Role } from '../users/enum/role';
+import { UpdateProjectDto } from './dto/update-project.dto';
+import { CreateProjectDto } from './dto/create-project.dto';
 
 @Injectable()
-export class ProjectsService {}
+export class ProjectsService {
+  constructor(
+    @InjectRepository(Project)
+    private readonly projectRepo: Repository<Project>,
+    @InjectRepository(User)
+    private readonly userRepo: Repository<User>,
+  ) {}
+
+  async create(dto: CreateProjectDto, ownerId: string): Promise<Project> {
+    const owner = await this.userRepo.findOneBy({ id: ownerId });
+    if (!owner) throw new NotFoundException('Utilisateur non trouvé');
+
+    const project = this.projectRepo.create({ ...dto, owner });
+    return this.projectRepo.save(project);
+  }
+
+  async findAll(): Promise<Project[]> {
+    return this.projectRepo.find({ relations: ['owner'] });
+  }
+
+  async findById(id: string): Promise<Project> {
+    const project = await this.projectRepo.findOne({
+      where: { id },
+      relations: ['owner'],
+    });
+    if (!project) throw new NotFoundException('Projet introuvable');
+    return project;
+  }
+
+  async update(
+    id: string,
+    dto: UpdateProjectDto,
+    requester: User,
+  ): Promise<Project> {
+    const project = await this.findById(id);
+
+    if (requester.role !== Role.admin && project.owner.id !== requester.id) {
+      throw new ForbiddenException('Vous ne pouvez modifier que vos projets');
+    }
+
+    Object.assign(project, dto);
+    return this.projectRepo.save(project);
+  }
+
+  async delete(id: string, requester: User): Promise<void> {
+    const project = await this.findById(id);
+
+    if (requester.role !== Role.admin && project.owner.id !== requester.id) {
+      throw new ForbiddenException('Vous ne pouvez supprimer que vos projets');
+    }
+
+    await this.projectRepo.delete(id);
+  }
+
+  async getRecommendations(userId: string): Promise<void> {
+    //TODO: Je comprends pas l'attendu ici, il faut que je regarde comment faire
+  }
+}
