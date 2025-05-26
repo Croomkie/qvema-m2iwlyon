@@ -2,17 +2,19 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
-import { Role } from './enum/role';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { UserDto } from './dto/user.dto';
 import { plainToInstance } from 'class-transformer';
+import { Interest } from '../interest/entities/interest.entity';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
+    @InjectRepository(Interest)
+    private readonly interestRepo: Repository<Interest>,
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
@@ -43,5 +45,29 @@ export class UsersService {
 
   async remove(id: string) {
     return await this.userRepo.delete(id);
+  }
+
+  async setUserInterests(userId: string, interestIds: string[]): Promise<void> {
+    const user = await this.userRepo.findOne({
+      where: { id: userId },
+      relations: ['interests'],
+    });
+
+    if (!user) {
+      throw new NotFoundException(`Utilisateur ${userId} introuvable`);
+    }
+
+    const interests = await this.interestRepo.findBy({ id: In(interestIds) });
+    user.interests = interests;
+
+    await this.userRepo.save(user);
+  }
+
+  async getUserInterests(userId: string): Promise<Interest[]> {
+    const user = await this.userRepo.findOne({
+      where: { id: userId },
+      relations: ['interests'],
+    });
+    return user?.interests ?? [];
   }
 }

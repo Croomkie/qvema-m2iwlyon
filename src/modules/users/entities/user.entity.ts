@@ -1,6 +1,15 @@
 import { Role } from '../enum/role'
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinTable,
+  ManyToMany,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { Exclude } from 'class-transformer';
+import { Interest } from '../../interest/entities/interest.entity';
 
 @Entity()
 export class User {
@@ -23,6 +32,10 @@ export class User {
     default: Role.entrepreneur
   })
   role: Role;
+
+  @ManyToMany(() => Interest, interest => interest.users, { cascade: true })
+  @JoinTable()
+  interests: Interest[];
 
   @CreateDateColumn({ type: "timestamp", default: () => "CURRENT_TIMESTAMP(6)" })
   createdAt: Date;
