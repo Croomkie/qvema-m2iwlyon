@@ -41,7 +41,7 @@ export class UsersService {
     await this.userRepo.update(id, updateUserDto);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async remove(id: string) {
+    return await this.userRepo.delete(id);
   }
 }

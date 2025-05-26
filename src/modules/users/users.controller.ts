@@ -52,7 +52,7 @@ export class UsersController {
 
   @UseGuards(RoleGuard([Role.admin]))
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.usersService.remove(+id);
+  async remove(@Param('id') id: string) {
+    return await this.usersService.remove(id);
   }
 }
