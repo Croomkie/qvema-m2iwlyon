@@ -6,6 +6,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import * as process from 'node:process';
+import { InterestModule } from './modules/interest/interest.module';
 
 @Module({
   imports: [ConfigModule.forRoot(),TypeOrmModule.forRoot({
@@ -13,7 +14,7 @@ import * as process from 'node:process';
     url: process.env.DATABASE_URL,
     autoLoadEntities: true,
     synchronize: true,
-  }),UsersModule, AuthModule],
+  }),UsersModule, AuthModule, InterestModule],
   controllers: [AppController],
   providers: [AppService],
 })

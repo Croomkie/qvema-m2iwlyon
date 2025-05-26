@@ -57,8 +57,19 @@ export class UsersService {
       throw new NotFoundException(`Utilisateur ${userId} introuvable`);
     }
 
-    const interests = await this.interestRepo.findBy({ id: In(interestIds) });
-    user.interests = interests;
+    const newInterests = await this.interestRepo.findBy({ id: In(interestIds) });
+
+    // Fusionner sans doublons
+    const currentIds = new Set(user.interests.map(i => i.id));
+    const combined = [...user.interests];
+
+    for (const interest of newInterests) {
+      if (!currentIds.has(interest.id)) {
+        combined.push(interest);
+      }
+    }
+
+    user.interests = combined;
 
     await this.userRepo.save(user);
   }
