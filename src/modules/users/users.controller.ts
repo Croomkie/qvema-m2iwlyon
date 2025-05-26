@@ -13,7 +13,7 @@ import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { RoleGuard } from '../auth/auth.guard';
 import { Role } from './enum/role';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody } from '@nestjs/swagger';
 import { JwtService } from '@nestjs/jwt';
 import { UserDto } from './dto/user.dto';
 
@@ -33,9 +33,9 @@ export class UsersController {
 
   @UseGuards(RoleGuard([Role.admin, Role.entrepreneur, Role.investor]))
   @Get('profile')
-  async getProfile(@Req() req): Promise<UserDto | null> {
+  async getProfile(@Req() req: any): Promise<UserDto | null> {
     try {
-      return await this.usersService.getUser(req.sub);
+      return await this.usersService.getUser(req.user.sub);
     } catch {
       throw new UnauthorizedException();
     }
@@ -43,8 +43,11 @@ export class UsersController {
 
   @UseGuards(RoleGuard([Role.admin, Role.entrepreneur, Role.investor]))
   @Put('profile')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(+id, updateUserDto);
+  async update(
+    @Body() updateUserDto: UpdateUserDto,
+    @Req() req: any,
+  ): Promise<void> {
+    return await this.usersService.update(req.user.sub, updateUserDto);
   }
 
   @UseGuards(RoleGuard([Role.admin]))

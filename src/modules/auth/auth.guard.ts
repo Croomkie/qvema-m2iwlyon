@@ -26,6 +26,8 @@ export const RoleGuard = (roles?: Role[]): ReturnType<typeof mixin> => {
           secret: jwtConstants.secret,
         });
 
+        request.user = payload;
+
         if (!roles || roles.length === 0) {
           return true; // accès libre si aucun rôle spécifié
         }

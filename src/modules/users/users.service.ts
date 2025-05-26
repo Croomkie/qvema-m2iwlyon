@@ -15,27 +15,6 @@ export class UsersService {
     private readonly userRepo: Repository<User>,
   ) {}
 
-  private users: User[] = [
-    {
-      id: 'addzeez-zezfe4-zfez5',
-      name: 'John Doe',
-      email: 'john@example.com',
-      password: '1234',
-      role: Role.entrepreneur,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-    {
-      id: 'addzeez-zezfe4-zfez5',
-      name: 'Jane Doe',
-      email: 'jane@example.com',
-      password: '1234',
-      role: Role.admin,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-  ];
-
   async create(createUserDto: CreateUserDto): Promise<User> {
     const user = this.userRepo.create(createUserDto);
     return this.userRepo.save(user);
@@ -45,8 +24,8 @@ export class UsersService {
     return this.userRepo.findOne({ where: { email } });
   }
 
-  findAll(): User[] {
-    return this.users;
+  async findAll(): Promise<User[]> {
+    return await this.userRepo.find();
   }
 
   async getUser(userId: string): Promise<UserDto | null> {
@@ -58,8 +37,8 @@ export class UsersService {
     return plainToInstance(UserDto, user, { excludeExtraneousValues: true });
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async update(id: string, updateUserDto: UpdateUserDto): Promise<void> {
+    await this.userRepo.update(id, updateUserDto);
   }
 
   remove(id: number) {
