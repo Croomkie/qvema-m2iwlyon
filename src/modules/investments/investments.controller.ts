@@ -10,7 +10,9 @@ import { AuthGuard } from '../auth/auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
 import { Role } from '../users/enum/role';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
+@ApiBearerAuth()
 @Controller('investments')
 export class InvestmentsController {
   @UseGuards(AuthGuard, RolesGuard)
