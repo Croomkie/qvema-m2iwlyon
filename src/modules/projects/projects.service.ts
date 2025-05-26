@@ -20,12 +20,12 @@ export class ProjectsService {
     private readonly userRepo: Repository<User>,
   ) {}
 
-  async create(dto: CreateProjectDto, ownerId: string): Promise<Project> {
+  async create(dto: CreateProjectDto, ownerId: string): Promise<any> {
     const owner = await this.userRepo.findOneBy({ id: ownerId });
     if (!owner) throw new NotFoundException('Utilisateur non trouvé');
 
-    const project = this.projectRepo.create({ ...dto, owner });
-    return this.projectRepo.save(project);
+    this.projectRepo.create({ ...dto, owner });
+    return { message: 'Projet créé' };
   }
 
   async findAll(): Promise<Project[]> {
@@ -44,22 +44,24 @@ export class ProjectsService {
   async update(
     id: string,
     dto: UpdateProjectDto,
-    requester: User,
-  ): Promise<Project> {
+    requester: any,
+  ): Promise<any> {
     const project = await this.findById(id);
 
-    if (requester.role !== Role.admin && project.owner.id !== requester.id) {
+    if (requester.role !== Role.admin && project.owner.id !== requester.sub) {
       throw new ForbiddenException('Vous ne pouvez modifier que vos projets');
     }
 
     Object.assign(project, dto);
-    return this.projectRepo.save(project);
+    await this.projectRepo.save(project);
+
+    return { message: 'Projet mis à jour' };
   }
 
-  async delete(id: string, requester: User): Promise<void> {
+  async delete(id: string, requester: any): Promise<void> {
     const project = await this.findById(id);
 
-    if (requester.role !== Role.admin && project.owner.id !== requester.id) {
+    if (requester.role !== Role.admin && project.owner.id !== requester.sub) {
       throw new ForbiddenException('Vous ne pouvez supprimer que vos projets');
     }
 
