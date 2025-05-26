@@ -13,8 +13,4 @@ export class InterestService {
   async getInterests(): Promise<Interest[] | null> {
     return await this.interestRepo.find();
   }
-
-  async getRecommendation(userId: string) {
-    //TODO: Implement recommendation logic based on user interests
-  }
 }
