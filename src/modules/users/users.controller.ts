@@ -14,17 +14,19 @@ import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { AuthGuard } from '../auth/auth.guard';
 import { Role } from './enum/role';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
 import { UserDto } from './dto/user.dto';
 import { SetUserInterestsDto } from '../interest/dto/setUserInterestsDto';
 import { Roles } from '../auth/roles.decorator';
 import { RolesGuard } from '../auth/roles.guard';
+import { Interest } from '../interest/entities/interest.entity';
 
 @ApiBearerAuth()
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  @ApiResponse({ type: [UserDto] })
   @UseGuards(AuthGuard, RolesGuard)
   @Get()
   @Roles(Role.admin)
@@ -32,6 +34,7 @@ export class UsersController {
     return this.usersService.findAll();
   }
 
+  @ApiResponse({ type: UserDto })
   @UseGuards(AuthGuard)
   @Get('profile')
   async getProfile(@Req() req: any): Promise<UserDto | null> {
@@ -64,6 +67,7 @@ export class UsersController {
     return this.usersService.setUserInterests(req.user.sub, dto.interestIds);
   }
 
+  @ApiResponse({ type: [Interest] })
   @Get('interests')
   @UseGuards(AuthGuard)
   async getInterests(@Req() req: any) {

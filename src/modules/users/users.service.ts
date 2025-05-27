@@ -26,8 +26,9 @@ export class UsersService {
     return this.userRepo.findOne({ where: { email } });
   }
 
-  async findAll(): Promise<User[]> {
-    return await this.userRepo.find();
+  async findAll(): Promise<UserDto[]> {
+    const users = await this.userRepo.find();
+    return plainToInstance(UserDto, users, { excludeExtraneousValues: true });
   }
 
   async getUser(userId: string): Promise<UserDto | null> {
@@ -57,10 +58,12 @@ export class UsersService {
       throw new NotFoundException(`Utilisateur ${userId} introuvable`);
     }
 
-    const newInterests = await this.interestRepo.findBy({ id: In(interestIds) });
+    const newInterests = await this.interestRepo.findBy({
+      id: In(interestIds),
+    });
 
     // Fusionner sans doublons
-    const currentIds = new Set(user.interests.map(i => i.id));
+    const currentIds = new Set(user.interests.map((i) => i.id));
     const combined = [...user.interests];
 
     for (const interest of newInterests) {

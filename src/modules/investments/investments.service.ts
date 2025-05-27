@@ -5,6 +5,8 @@ import { User } from '../users/entities/user.entity';
 import { Project } from '../projects/entities/project.entity';
 import { Investment } from './entities/investment.entity';
 import { CreateInvestmentDto } from './dto/createInvestmentDto';
+import { plainToInstance } from 'class-transformer';
+import { InvestmentDto } from './dto/investmentDto';
 
 @Injectable()
 export class InvestmentsService {
@@ -36,14 +38,20 @@ export class InvestmentsService {
     return { message: 'investissement créé avec succès' };
   }
 
-  async findAll(): Promise<Investment[]> {
-    return this.investmentRepo.find();
+  async findAll(): Promise<InvestmentDto[]> {
+    const investments = await this.investmentRepo.find();
+    return plainToInstance(InvestmentDto, investments, {
+      excludeExtraneousValues: true,
+    });
   }
 
-  async findAllForUser(id: string): Promise<Investment[]> {
-    return this.investmentRepo.find({
-      where: { investor: { id: id } },
+  async findAllForUser(id: string): Promise<InvestmentDto[]> {
+    const investments = await this.investmentRepo.find({
+      where: { investor: { id } },
       relations: ['project'],
+    });
+    return plainToInstance(InvestmentDto, investments, {
+      excludeExtraneousValues: true,
     });
   }
 

@@ -10,6 +10,9 @@ import { User } from '../users/entities/user.entity';
 import { Role } from '../users/enum/role';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { CreateProjectDto } from './dto/create-project.dto';
+import { plainToInstance } from 'class-transformer';
+import { UserDto } from '../users/dto/user.dto';
+import { ProjectDto } from './dto/projectDto';
 
 @Injectable()
 export class ProjectsService {
@@ -30,8 +33,19 @@ export class ProjectsService {
     return { message: 'Projet créé' };
   }
 
-  async findAll(): Promise<Project[]> {
-    return this.projectRepo.find({ relations: ['owner'] });
+  async findAll(): Promise<ProjectDto[]> {
+    const projects = await this.projectRepo.find({ relations: ['owner'] });
+    console.log('Projects found:', projects);
+    return plainToInstance(
+      ProjectDto,
+      projects.map((project) => ({
+        ...project,
+        owner: plainToInstance(UserDto, project.owner, {
+          excludeExtraneousValues: true,
+        }),
+      })),
+      { excludeExtraneousValues: true },
+    );
   }
 
   async findById(id: string): Promise<Project> {
@@ -79,13 +93,13 @@ export class ProjectsService {
     });
     if (!user) throw new NotFoundException('Utilisateur non trouvé');
 
-    const interests = user.interests.map(i => i.name); // ex: ["Tech", "Sport"]
+    const interests = user.interests.map((i) => i.name); // ex: ["Tech", "Sport"]
 
     // 2. Chercher les projets dont la catégorie est dans les intérêts
     if (!interests.length) return []; // pas d'intérêt -> pas de reco
 
     const projects = await this.projectRepo.find({
-      where: interests.map(category => ({ category })),
+      where: interests.map((category) => ({ category })),
     });
 
     return projects;

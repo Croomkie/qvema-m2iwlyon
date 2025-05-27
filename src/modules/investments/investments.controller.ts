@@ -8,13 +8,14 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
 import { RolesGuard } from '../auth/roles.guard';
 import { AuthGuard } from '../auth/auth.guard';
 import { Roles } from '../auth/roles.decorator';
 import { Role } from '../users/enum/role';
 import { InvestmentsService } from './investments.service';
 import { CreateInvestmentDto } from './dto/createInvestmentDto';
+import { InvestmentDto } from './dto/investmentDto';
 
 @ApiBearerAuth()
 @Controller('investments')
@@ -28,18 +29,20 @@ export class InvestmentsController {
     return this.investmentsService.create(dto);
   }
 
+  @ApiResponse({ type: [InvestmentDto] })
   @UseGuards(AuthGuard, RolesGuard)
   @Get('admin/investments')
   @Roles(Role.admin)
-  findAll() {
-    return this.investmentsService.findAll();
+  async findAll() {
+    return await this.investmentsService.findAll();
   }
 
+  @ApiResponse({ type: [InvestmentDto] })
   @UseGuards(AuthGuard, RolesGuard)
   @Get()
   @Roles(Role.investor)
-  findAllForUser(@Req() req: any) {
-    return this.investmentsService.findAllForUser(req.user.sub);
+  async findAllForUser(@Req() req: any) {
+    return await this.investmentsService.findAllForUser(req.user.sub);
   }
 
   @Get('project/:id')

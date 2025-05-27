@@ -13,10 +13,11 @@ import { AuthGuard } from '../auth/auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Role } from '../users/enum/role';
 import { Roles } from '../auth/roles.decorator';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
 import { ProjectsService } from './projects.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
+import { ProjectDto } from './dto/projectDto';
 
 @ApiBearerAuth()
 @Controller('projects')
@@ -30,10 +31,11 @@ export class ProjectsController {
     return this.projectService.create(dto, req.user.id);
   }
 
+  @ApiResponse({ type: [ProjectDto] })
   @UseGuards(AuthGuard)
   @Get()
-  async getAllProject() {
-    return this.projectService.findAll();
+  async getAllProject(): Promise<ProjectDto[]> {
+    return await this.projectService.findAll();
   }
 
   @UseGuards(AuthGuard)
