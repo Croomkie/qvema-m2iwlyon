@@ -70,7 +70,24 @@ export class ProjectsService {
     await this.projectRepo.delete(id);
   }
 
-  async getRecommendations(userId: string): Promise<void> {
-    //TODO: Je comprends pas l'attendu ici, il faut que je regarde comment faire
+  //Fait avec GPT car je ne comprenais pas l'attendu ^^
+  async getRecommendations(userId: string): Promise<Project[]> {
+    // 1. Charger l'utilisateur et ses centres d'intérêt
+    const user = await this.userRepo.findOne({
+      where: { id: userId },
+      relations: ['interests'],
+    });
+    if (!user) throw new NotFoundException('Utilisateur non trouvé');
+
+    const interests = user.interests.map(i => i.name); // ex: ["Tech", "Sport"]
+
+    // 2. Chercher les projets dont la catégorie est dans les intérêts
+    if (!interests.length) return []; // pas d'intérêt -> pas de reco
+
+    const projects = await this.projectRepo.find({
+      where: interests.map(category => ({ category })),
+    });
+
+    return projects;
   }
 }
